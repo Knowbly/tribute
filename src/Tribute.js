@@ -259,6 +259,17 @@ class Tribute {
 
             this.range.positionMenuAtCaret(scrollTo)
 
+            if (this.current.collection.headerTemplate) {
+                const header = document.createElement("div");
+                header.setAttribute("class", "header");
+                header.innerHTML = this.current.collection.headerTemplate(text);
+                const oldHeader = this.menu.querySelector(".header");
+                if (oldHeader) {
+                    oldHeader.remove();
+                }
+                this.menu.prepend(header);
+            }
+
             if (!items.length) {
                 let noMatchEvent = new CustomEvent('tribute-no-match', { detail: this.menu })
                 this.current.element.dispatchEvent(noMatchEvent)
@@ -272,10 +283,6 @@ class Tribute {
             }
 
             ul.innerHTML = ''
-
-            if (this.current.collection.headerTemplate) {
-                ul.innerHTML = this.current.collection.headerTemplate(text);
-            }
 
             items.forEach((item, index) => {
                 let li = this.range.getDocument().createElement('li')

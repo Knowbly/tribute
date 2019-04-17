@@ -1,27 +1,55 @@
 .tribute-container {
   position: absolute;
+  font-size: 14px;
   top: 0;
   left: 0;
   height: auto;
-  max-height: 300px;
-  max-width: 500px;
-  overflow: auto;
+  overflow: hidden;
   display: block;
+  margin-top: 6px;
+  background-color: #fff;
+  color: #424242;
+  border-radius: 3px;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+  width: 280px;
+  max-height: 368px;
   z-index: 999999; }
+  .tribute-container .header {
+    height: 56px;
+    border-bottom: 1px solid #EEEEEE;
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    padding: 0 16px; }
   .tribute-container ul {
     margin: 0;
-    margin-top: 2px;
     padding: 0;
     list-style: none;
-    background: #efefef; }
-  .tribute-container li {
-    padding: 5px 5px;
-    cursor: pointer; }
-    .tribute-container li.highlight {
-      background: #ddd; }
-    .tribute-container li span {
-      font-weight: bold; }
-    .tribute-container li.no-match {
-      cursor: default; }
+    max-height: 280px;
+    overflow-y: auto; }
+    .tribute-container ul li {
+      align-items: center;
+      color: #424242;
+      cursor: pointer;
+      display: flex;
+      font-size: 14px;
+      font-weight: 400;
+      height: 56px;
+      padding: 0 16px; }
+      .tribute-container ul li.highlight {
+        background: #EEEEEE; }
+      .tribute-container ul li.no-match {
+        cursor: default; }
+      .tribute-container ul li span {
+        font-weight: 600; }
+        .tribute-container ul li span.email {
+          color: #717171;
+          font-size: 12px;
+          font-weight: normal; }
+      .tribute-container ul li img {
+        width: 32px;
+        height: 32px;
+        margin-right: 16px;
+        border-radius: 50%; }
   .tribute-container .menu-highlighted {
     font-weight: bold; }

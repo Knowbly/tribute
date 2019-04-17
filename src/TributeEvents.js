@@ -80,9 +80,12 @@ class TributeEvents {
     click(instance, event) {
         let tribute = instance.tribute
         if (tribute.menu && tribute.menu.contains(event.target)) {
-            let li = event.target
             event.preventDefault()
             event.stopPropagation()
+            if (event.target.getAttribute("class") === "header") {
+                return
+            }
+            let li = event.target
             while (li.nodeName.toLowerCase() !== 'li') {
                 li = li.parentNode
                 if (!li || li === tribute.menu) {
