@@ -18,6 +18,7 @@ class Tribute {
         collection = null,
         menuContainer = null,
         noMatchTemplate = null,
+        headerTemplate = null,
         requireLeadingSpace = true,
         allowSpaces = false,
         replaceTextSuffix = null,
@@ -68,6 +69,14 @@ class Tribute {
                     return noMatchTemplate || function () {return ''}.bind(this)
                 })(noMatchTemplate),
 
+                headerTemplate: (t => {
+                    if (typeof t === 'function') {
+                        return t.bind(this)
+                    }
+
+                    return headerTemplate || function () {return ''}.bind(this)
+                })(headerTemplate),
+
                 // column to search against in the object
                 lookup: lookup,
 
@@ -100,6 +109,13 @@ class Tribute {
 
                         return null
                     })(noMatchTemplate),
+                    headerTemplate: (t => {
+                        if (typeof t === 'function') {
+                            return t.bind(this)
+                        }
+
+                        return null
+                    })(headerTemplate),
                     lookup: item.lookup || lookup,
                     fillAttr: item.fillAttr || fillAttr,
                     values: item.values,
@@ -217,7 +233,7 @@ class Tribute {
             this.current.mentionText = ''
         }
 
-        const processValues = (values) => {
+        const processValues = (values, text) => {
             // Tribute may not be active any more by the time the value callback returns
             if (!this.isActive) {
                 return
@@ -239,10 +255,20 @@ class Tribute {
 
             this.current.filteredItems = items
 
-
             let ul = this.menu.querySelector('ul')
 
             this.range.positionMenuAtCaret(scrollTo)
+
+            if (this.current.collection.headerTemplate) {
+                const header = document.createElement("div");
+                header.setAttribute("class", "header");
+                header.innerHTML = this.current.collection.headerTemplate(text);
+                const oldHeader = this.menu.querySelector(".header");
+                if (oldHeader) {
+                    oldHeader.remove();
+                }
+                this.menu.prepend(header);
+            }
 
             if (!items.length) {
                 let noMatchEvent = new CustomEvent('tribute-no-match', { detail: this.menu })
@@ -279,7 +305,7 @@ class Tribute {
         if (typeof this.current.collection.values === 'function') {
             this.current.collection.values(this.current.mentionText, processValues)
         } else {
-            processValues(this.current.collection.values)
+            processValues(this.current.collection.values, this.current.mentionText)
         }
     }
 
