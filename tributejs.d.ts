@@ -28,6 +28,10 @@ export type TributeCollection<T extends {}> = {
   // template for when no match is found (optional),
   // If no template is provided, menu is hidden.
   noMatchTemplate?: () => string
+  
+  // template for dropdown header (optional),
+  // If no template is provided, there is no header.
+  headerTemplate?: () => string
 
   // specify an alternative parent container for the menu
   menuContainer?: Element
