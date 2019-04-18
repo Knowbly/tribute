@@ -55,6 +55,11 @@ class TributeEvents {
         delete element.boundInput
     }
 
+    scroll(instance, e) {
+        instance.isActive = false
+        instance.hideMenu()
+    }
+
     keydown(instance, event) {
         if (instance.shouldDeactivate(event)) {
             instance.tribute.isActive = false
@@ -82,7 +87,7 @@ class TributeEvents {
         if (tribute.menu && tribute.menu.contains(event.target)) {
             event.preventDefault()
             event.stopPropagation()
-            if (event.target.getAttribute("class") === "header") {
+            if (event.target.getAttribute("class") === "header" || event.target.tagName === "UL") {
                 return
             }
             let li = event.target
@@ -243,7 +248,7 @@ class TributeEvents {
                     } else if (selected === 0) {
                       this.tribute.menuSelected = count - 1
                       this.setActiveLi()
-                      this.tribute.menu.scrollTop = this.tribute.menu.scrollHeight
+                      this.tribute.menu.querySelector("ul").scrollTop = this.tribute.menu.querySelector("ul").offsetHeight
                     }
                 }
             },
@@ -261,7 +266,7 @@ class TributeEvents {
                     } else if (count === selected) {
                         this.tribute.menuSelected = 0
                         this.setActiveLi()
-                        this.tribute.menu.scrollTop = 0
+                        this.tribute.menu.querySelector("ul").scrollTop = 0
                     }
                 }
             },
@@ -287,14 +292,14 @@ class TributeEvents {
                 li.classList.add(this.tribute.current.collection.selectClass);
 
                 let liClientRect = li.getBoundingClientRect();
-                let menuClientRect = this.tribute.menu.getBoundingClientRect();
+                let menuClientRect = this.tribute.menu.querySelector("ul").getBoundingClientRect();
 
                 if (liClientRect.bottom > menuClientRect.bottom) {
                     let scrollDistance = liClientRect.bottom - menuClientRect.bottom;
-                    this.tribute.menu.scrollTop += scrollDistance
+                    this.tribute.menu.querySelector("ul").scrollTop += scrollDistance
                 } else if (liClientRect.top < menuClientRect.top) {
                     let scrollDistance = menuClientRect.top - liClientRect.top;
-                    this.tribute.menu.scrollTop -= scrollDistance
+                    this.tribute.menu.querySelector("ul").scrollTop -= scrollDistance
                 }
 
             } else {

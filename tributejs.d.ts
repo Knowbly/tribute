@@ -36,6 +36,9 @@ export type TributeCollection<T extends {}> = {
   // specify an alternative parent container for the menu
   menuContainer?: Element
 
+  // specify the scrollable container where tribute is to hide menu on scroll. (optional)
+  scrollContainer?: Element
+
   // column to search against in the object (accepts function or string)
   lookup?: string | ((item: T) => string)
 
