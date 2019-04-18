@@ -87,7 +87,7 @@ class TributeEvents {
         if (tribute.menu && tribute.menu.contains(event.target)) {
             event.preventDefault()
             event.stopPropagation()
-            if (event.target.getAttribute("class") === "header") {
+            if (event.target.getAttribute("class") === "header" || event.target.tagName === "UL") {
                 return
             }
             let li = event.target
