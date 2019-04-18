@@ -55,6 +55,11 @@ class TributeEvents {
         delete element.boundInput
     }
 
+    scroll(instance, e) {
+        instance.isActive = false
+        instance.hideMenu()
+    }
+
     keydown(instance, event) {
         if (instance.shouldDeactivate(event)) {
             instance.tribute.isActive = false
@@ -288,8 +293,6 @@ class TributeEvents {
 
                 let liClientRect = li.getBoundingClientRect();
                 let menuClientRect = this.tribute.menu.querySelector("ul").getBoundingClientRect();
-                console.log(liClientRect.bottom > menuClientRect.bottom)
-                console.log(liClientRect.top < menuClientRect.top)
 
                 if (liClientRect.bottom > menuClientRect.bottom) {
                     let scrollDistance = liClientRect.bottom - menuClientRect.bottom;

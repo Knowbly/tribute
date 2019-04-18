@@ -17,6 +17,7 @@ class Tribute {
         fillAttr = 'value',
         collection = null,
         menuContainer = null,
+        scrollContainer = null,
         noMatchTemplate = null,
         headerTemplate = null,
         requireLeadingSpace = true,
@@ -32,6 +33,7 @@ class Tribute {
         this.inputEvent = false
         this.isActive = false
         this.menuContainer = menuContainer
+        this.scrollContainer = scrollContainer
         this.allowSpaces = allowSpaces
         this.replaceTextSuffix = replaceTextSuffix
         this.positionMenu = positionMenu
@@ -185,7 +187,16 @@ class Tribute {
 
         this.ensureEditable(el)
         this.events.bind(el)
+        
+        if (this.scrollContainer) {
+            this.scrollContainer.addEventListener('scroll', this.scrollEvent.bind(this) )
+        }
+
         el.setAttribute('data-tribute', true)
+    }
+
+    scrollEvent(e) {
+        this.events.scroll(this, e)
     }
 
     ensureEditable(element) {
@@ -448,6 +459,9 @@ class Tribute {
         this.events.unbind(el)
         if (el.tributeMenu) {
             this.menuEvents.unbind(el.tributeMenu)
+        }
+        if (this.scrollContainer) {
+            this.scrollContainer.removeEventListener('scroll', this.scrollEvent)
         }
 
         setTimeout(() => {
