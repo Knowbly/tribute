@@ -307,6 +307,7 @@ class Tribute {
         } else {
             processValues(this.current.collection.values, this.current.mentionText)
         }
+        this.menu.querySelector("ul").scrollTop = 0
     }
 
     showMenuForCollection(element, collectionIndex) {
