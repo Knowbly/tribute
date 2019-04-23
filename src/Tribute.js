@@ -159,7 +159,7 @@ class Tribute {
         })
     }
 
-    attach(el) {
+    attach(el, editor) {
         if (!el) {
             throw new Error('[Tribute] Must pass in a DOM node or NodeList.')
         }
@@ -176,17 +176,17 @@ class Tribute {
                 this._attach(el[i])
             }
         } else {
-            this._attach(el)
+            this._attach(el, editor)
         }
     }
 
-    _attach(el) {
+    _attach(el, editor) {
         if (el.hasAttribute('data-tribute')) {
             console.warn('Tribute was already bound to ' + el.nodeName)
         }
 
         this.ensureEditable(el)
-        this.events.bind(el)
+        this.events.bind(el, editor)
         
         if (this.scrollContainer) {
             this.scrollContainer.addEventListener('scroll', this.scrollEvent.bind(this) )
@@ -271,14 +271,16 @@ class Tribute {
             this.range.positionMenuAtCaret(scrollTo)
 
             if (this.current.collection.headerTemplate) {
-                const header = document.createElement("div");
-                header.setAttribute("class", "header");
-                header.innerHTML = this.current.collection.headerTemplate(text);
-                const oldHeader = this.menu.querySelector(".header");
-                if (oldHeader) {
-                    oldHeader.remove();
+                const header = document.createElement('div')
+                header.setAttribute("class", "header")
+                header.innerHTML = this.current.collection.headerTemplate(text)
+                const oldHeader = this.menu.querySelector(".header")
+                if (oldHeader && oldHeader.remove) {
+                    oldHeader.remove()
+                } else if (oldHeader && !oldHeader.remove) {
+                    oldHeader.parentNode.removeChild(oldHeader)
                 }
-                this.menu.prepend(header);
+                this.menu.insertBefore(header, this.menu.childNodes[0])
             }
 
             if (!items.length) {

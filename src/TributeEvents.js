@@ -28,9 +28,19 @@ class TributeEvents {
             value: 'DOWN'
         }]
     }
+    
+    static remove(elem) {
+        if (elem && elem.remove) {
+            elem.remove()
+            return
+        }
+        if (elem && !elem.remove) {
+            elem.parentNode.removeChild(elem)
+        }
+    }
 
-    bind(element) {
-        element.boundKeydown = this.keydown.bind(element, this);
+    bind(element, editor) {
+        element.boundKeydown = this.keydown.bind(element, this, editor);
         element.boundKeyup = this.keyup.bind(element, this);
         element.boundInput = this.input.bind(element, this);
 
@@ -60,7 +70,7 @@ class TributeEvents {
         instance.hideMenu()
     }
 
-    keydown(instance, event) {
+    keydown(instance, editor, event) {
         if (instance.shouldDeactivate(event)) {
             instance.tribute.isActive = false
             instance.tribute.hideMenu()
@@ -75,6 +85,52 @@ class TributeEvents {
                 instance.callbacks()[o.value.toLowerCase()](event, element)
             }
         })
+
+        // check if key is a printable character
+        const charCode = (typeof event.which === "undefined") ? event.keyCode : event.which;
+        const char = String.fromCharCode(charCode);
+        const allowedKeys = [13, 8]
+
+        if (!allowedKeys.includes(charCode) && !/\w/.test(char)) {
+            return
+        }
+
+        if ((!instance.commandEvent || allowedKeys.includes(charCode)) && editor) {
+            const anchor = editor.selection.get().anchorNode
+            if (anchor && anchor.parentNode && anchor.parentNode.classList.contains("fr-tribute")) {
+                const parent = anchor.parentNode
+                const docFrag = document.createDocumentFragment()
+                const div = document.createElement('div')
+                div.innerHTML = ''
+                if (charCode !== 13) {
+                    div.innerHTML = '@'
+                }
+                div.firstChild && docFrag.appendChild(div.firstChild)
+                editor.selection.save()
+                if (charCode === 13) {
+                    // breaks word
+                    if (parent.previousSibling && parent.previousSibling.previousSibling) {
+                        const parent2 = parent.previousSibling.previousSibling
+                        if (parent2.classList.contains("fr-tribute")) {
+                            while (parent2.firstChild) {
+                                const child = parent2.removeChild(parent2.firstChild)
+                                docFrag.appendChild(child)
+                            }
+                            docFrag.appendChild(document.createElement('br'))
+                            TributeEvents.remove(parent.previousSibling.previousSibling)
+                            TributeEvents.remove(parent.previousSibling)
+                        }
+                    }
+                }
+                while (parent.firstChild) {
+                    const child = parent.removeChild(parent.firstChild)
+                    docFrag.appendChild(child)
+                }
+                parent.parentNode.replaceChild(docFrag, parent)
+                editor.selection.restore()
+                
+            }
+        }
     }
 
     input(instance, event) {
@@ -318,7 +374,6 @@ class TributeEvents {
 
       return height
     }
-
 }
 
 export default TributeEvents;
