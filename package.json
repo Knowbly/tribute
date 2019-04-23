@@ -1,6 +1,6 @@
 {
   "name": "@knowbly/tributejs",
-  "version": "3.6.3",
+  "version": "3.6.4",
   "description": "Native ES6 @mentions",
   "main": "dist/tribute.js",
   "types": "tributejs.d.ts",
