@@ -26,6 +26,8 @@ class Tribute {
         positionMenu = true,
         spaceSelectsMatch = false,
         searchOpts = {},
+        editor = {},
+        isValidSelection = null,
     }) {
         this.autocompleteMode = autocompleteMode
         this.menuSelected = 0
@@ -39,6 +41,8 @@ class Tribute {
         this.positionMenu = positionMenu
         this.hasTrailingSpace = false;
         this.spaceSelectsMatch = spaceSelectsMatch;
+        this.invalidEvent = document.createEvent('Event');
+        this.invalidEvent.initEvent('invalid', true, true);
 
         if (this.autocompleteMode) {
             trigger = ''
@@ -90,7 +94,17 @@ class Tribute {
 
                 requireLeadingSpace: requireLeadingSpace,
 
-                searchOpts: searchOpts
+                searchOpts: searchOpts,
+
+                editor: editor,
+
+                isValidSelection: (t => {
+                    if (typeof t === 'function') {
+                        return t.bind(this)
+                    }
+
+                    return isValidSelection || function () {return ''}.bind(this)
+                })(isValidSelection)
             }]
         }
         else if (collection) {
@@ -122,7 +136,15 @@ class Tribute {
                     fillAttr: item.fillAttr || fillAttr,
                     values: item.values,
                     requireLeadingSpace: item.requireLeadingSpace,
-                    searchOpts: item.searchOpts || searchOpts
+                    searchOpts: item.searchOpts || searchOpts,
+                    editor: item.editor || editor,
+                    isValidSelection: (t => {
+                        if (typeof t === 'function') {
+                            return t.bind(this)
+                        }
+
+                        return null
+                    })(isValidSelection)
                 }
             })
         }
@@ -401,6 +423,10 @@ class Tribute {
         index = parseInt(index)
         if (typeof index !== 'number' || isNaN(index)) return
         let item = this.current.filteredItems[index]
+        if (typeof this.current.collection.isValidSelection === 'function' && this.current.collection.isValidSelection(item, this.current.collection.editor) === false) {
+            this.current.collection.editor.el.dispatchEvent(this.invalidEvent)
+            return
+        }
         let content = this.current.collection.selectTemplate(item)
         if (content !== null) this.replaceText(content, originalEvent, item)
     }

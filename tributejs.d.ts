@@ -63,6 +63,12 @@ export type TributeCollection<T extends {}> = {
 
   //specify whether to put Tribute in autocomplete mode
   autocompleteMode?: boolean
+
+  // editor instance (optional but mey be required for valid selection check)
+  editor?: Object
+
+  //function to check if the selection is valid (optional)
+  isValidSelection?: Function
 }
 
 export type TributeOptions<T> = TributeCollection<T> | {
