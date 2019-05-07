@@ -39,10 +39,14 @@ class TributeEvents {
         }
     }
 
+    static isInsideMention(anchor) {
+        return anchor && anchor.parentNode && anchor.parentNode.classList.contains("fr-tribute")
+    }
+
     bind(element, editor) {
         element.boundKeydown = this.keydown.bind(element, this, editor);
-        element.boundKeyup = this.keyup.bind(element, this);
-        element.boundInput = this.input.bind(element, this);
+        element.boundKeyup = this.keyup.bind(element, this, editor);
+        element.boundInput = this.input.bind(element, this, editor);
 
         element.addEventListener('keydown',
             element.boundKeydown, false)
@@ -82,7 +86,7 @@ class TributeEvents {
         TributeEvents.keys().forEach(o => {
             if (o.key === event.keyCode) {
                 instance.commandEvent = true
-                instance.callbacks()[o.value.toLowerCase()](event, element)
+                instance.callbacks()[o.value.toLowerCase()](event, element, editor)
             }
         })
 
@@ -97,7 +101,7 @@ class TributeEvents {
 
         if ((!instance.commandEvent || allowedKeys.includes(charCode)) && editor) {
             const anchor = editor.selection.get().anchorNode
-            if (anchor && anchor.parentNode && anchor.parentNode.classList.contains("fr-tribute")) {
+            if (TributeEvents.isInsideMention(anchor)) {
                 const parent = anchor.parentNode
                 const docFrag = document.createDocumentFragment()
                 const div = document.createElement('div')
@@ -128,14 +132,13 @@ class TributeEvents {
                 }
                 parent.parentNode.replaceChild(docFrag, parent)
                 editor.selection.restore()
-                
             }
         }
     }
 
-    input(instance, event) {
+    input(instance, event, editor) {
         instance.inputEvent = true
-        instance.keyup.call(this, instance, event)
+        instance.keyup.call(this, instance, event, editor)
     }
 
     click(instance, event) {
@@ -163,7 +166,7 @@ class TributeEvents {
         }
     }
 
-    keyup(instance, event) {
+    keyup(instance, editor, event) {
         if (instance.inputEvent) {
             instance.inputEvent = false
         }
@@ -277,7 +280,7 @@ class TributeEvents {
                 // choose first match
                 this.callbacks().enter(e, el)
             },
-            space: (e, el) => {
+            space: (e, el, editor) => {
                 if (this.tribute.isActive) {
                     if (this.tribute.spaceSelectsMatch) {
                         this.callbacks().enter(e, el)
@@ -287,6 +290,13 @@ class TributeEvents {
                             this.tribute.hideMenu();
                             this.tribute.isActive = false;
                         }, 0);
+                    }
+                } else {
+                    const anchor = editor.selection.get().anchorNode
+                    if (TributeEvents.isInsideMention(anchor)) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return false;
                     }
                 }
             },
