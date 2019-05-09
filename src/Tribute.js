@@ -324,7 +324,7 @@ class Tribute {
                 li.setAttribute('data-index', index)
                 li.addEventListener('mousemove', (e) => {
                   let li = e.target;
-                  let index = li.getAttribute('data-index')
+                  let index = li.getAttribute('data-index') || (li.parentNode && li.parentNode.getAttribute('data-index'))
                     if (e.movementY !== 0) {
                         this.events.setActiveLi(index)
                     }
