@@ -291,8 +291,8 @@ class Tribute {
             let ul = this.menu.querySelector('ul')
 
             this.range.positionMenuAtCaret(scrollTo)
-
-            if (this.current.collection.headerTemplate) {
+            
+            if (this.current.collection.headerTemplate && this.current.collection.headerTemplate(text)) {
                 const header = document.createElement('div')
                 header.setAttribute("class", "header")
                 header.innerHTML = this.current.collection.headerTemplate(text)
