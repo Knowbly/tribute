@@ -291,8 +291,8 @@ class Tribute {
             let ul = this.menu.querySelector('ul')
 
             this.range.positionMenuAtCaret(scrollTo)
-
-            if (this.current.collection.headerTemplate) {
+            
+            if (this.current.collection.headerTemplate && this.current.collection.headerTemplate(text)) {
                 const header = document.createElement('div')
                 header.setAttribute("class", "header")
                 header.innerHTML = this.current.collection.headerTemplate(text)
@@ -324,7 +324,7 @@ class Tribute {
                 li.setAttribute('data-index', index)
                 li.addEventListener('mousemove', (e) => {
                   let li = e.target;
-                  let index = li.getAttribute('data-index')
+                  let index = li.getAttribute('data-index') || (li.parentNode && li.parentNode.getAttribute('data-index'))
                     if (e.movementY !== 0) {
                         this.events.setActiveLi(index)
                     }
