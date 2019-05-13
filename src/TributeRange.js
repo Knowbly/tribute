@@ -45,7 +45,6 @@ class TributeRange {
                                      right: ${coordinates.right}px;
                                      bottom: ${coordinates.bottom}px;
                                      position: absolute;
-                                     opacity: 0;
                                      zIndex: 10000;
                                      display: block;`
 
@@ -71,8 +70,6 @@ class TributeRange {
                 if (menuIsOffScreenHorizontally || menuIsOffScreenVertically) {
                     this.tribute.menu.style.cssText = 'display: none'
                     this.positionMenuAtCaret(scrollTo)
-                } else {
-                    this.tribute.menu.style.opacity = "1"
                 }
             }, 0)
 
