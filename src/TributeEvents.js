@@ -132,19 +132,6 @@ class TributeEvents {
                 instance.callbacks()[o.value.toLowerCase()](event, element, editor)
             }
         })
-
-        // check if key is a printable character
-        const charCode = (typeof event.which === "undefined") ? event.keyCode : event.which
-        const char = String.fromCharCode(charCode)
-        const allowedKeys = [13, 8]
-
-        if (!allowedKeys.includes(charCode) && !/\w/.test(char)) {
-            return
-        }
-
-        if ((!instance.commandEvent || allowedKeys.includes(charCode)) && editor) {
-            TributeEvents.removeMention(editor, event)
-        }
     }
 
     keypress(instance, editor, event) {
