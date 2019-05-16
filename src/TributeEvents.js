@@ -43,8 +43,46 @@ class TributeEvents {
         return anchor && anchor.parentNode && anchor.parentNode.classList.contains("fr-tribute")
     }
 
+    static removeMention(editor, event) {
+        const charCode = (typeof event.which === "undefined") ? event.keyCode : event.which;
+        const anchor = editor.selection.get().anchorNode
+        if (TributeEvents.isInsideMention(anchor)) {
+            const parent = anchor.parentNode
+            const docFrag = document.createDocumentFragment()
+            const div = document.createElement('div')
+            div.innerHTML = ''
+            if (charCode !== 13) {
+                div.innerHTML = '@'
+            }
+            div.firstChild && docFrag.appendChild(div.firstChild)
+            editor.selection.save()
+            if (charCode === 13) {
+                // breaks word
+                if (parent.previousSibling && parent.previousSibling.previousSibling) {
+                    const parent2 = parent.previousSibling.previousSibling
+                    if (parent2.classList.contains("fr-tribute")) {
+                        while (parent2.firstChild) {
+                            const child = parent2.removeChild(parent2.firstChild)
+                            docFrag.appendChild(child)
+                        }
+                        docFrag.appendChild(document.createElement('br'))
+                        TributeEvents.remove(parent.previousSibling.previousSibling)
+                        TributeEvents.remove(parent.previousSibling)
+                    }
+                }
+            }
+            while (parent.firstChild) {
+                const child = parent.removeChild(parent.firstChild)
+                docFrag.appendChild(child)
+            }
+            parent.parentNode.replaceChild(docFrag, parent)
+            editor.selection.restore()
+        }
+    }
+
     bind(element, editor) {
         element.boundKeydown = this.keydown.bind(element, this, editor);
+        element.boundKeypress = this.keypress.bind(element, this, editor);
         element.boundKeyup = this.keyup.bind(element, this, editor);
         element.boundInput = this.input.bind(element, this, editor);
 
@@ -52,6 +90,8 @@ class TributeEvents {
             element.boundKeydown, false)
         element.addEventListener('keyup',
             element.boundKeyup, false)
+        element.addEventListener('keypress',
+            element.boundKeypress, false)
         element.addEventListener('input',
             element.boundInput, false)
     }
@@ -61,10 +101,13 @@ class TributeEvents {
             element.boundKeydown, false)
         element.removeEventListener('keyup',
             element.boundKeyup, false)
+        element.removeEventListener('keypress',
+            element.boundKeypress, false)
         element.removeEventListener('input',
             element.boundInput, false)
 
         delete element.boundKeydown
+        delete element.boundKeypress
         delete element.boundKeyup
         delete element.boundInput
     }
@@ -89,50 +132,11 @@ class TributeEvents {
                 instance.callbacks()[o.value.toLowerCase()](event, element, editor)
             }
         })
+    }
 
-        // check if key is a printable character
-        const charCode = (typeof event.which === "undefined") ? event.keyCode : event.which;
-        const char = String.fromCharCode(charCode);
-        const allowedKeys = [13, 8]
-
-        if (!allowedKeys.includes(charCode) && !/\w/.test(char)) {
-            return
-        }
-
-        if ((!instance.commandEvent || allowedKeys.includes(charCode)) && editor) {
-            const anchor = editor.selection.get().anchorNode
-            if (TributeEvents.isInsideMention(anchor)) {
-                const parent = anchor.parentNode
-                const docFrag = document.createDocumentFragment()
-                const div = document.createElement('div')
-                div.innerHTML = ''
-                if (charCode !== 13) {
-                    div.innerHTML = '@'
-                }
-                div.firstChild && docFrag.appendChild(div.firstChild)
-                editor.selection.save()
-                if (charCode === 13) {
-                    // breaks word
-                    if (parent.previousSibling && parent.previousSibling.previousSibling) {
-                        const parent2 = parent.previousSibling.previousSibling
-                        if (parent2.classList.contains("fr-tribute")) {
-                            while (parent2.firstChild) {
-                                const child = parent2.removeChild(parent2.firstChild)
-                                docFrag.appendChild(child)
-                            }
-                            docFrag.appendChild(document.createElement('br'))
-                            TributeEvents.remove(parent.previousSibling.previousSibling)
-                            TributeEvents.remove(parent.previousSibling)
-                        }
-                    }
-                }
-                while (parent.firstChild) {
-                    const child = parent.removeChild(parent.firstChild)
-                    docFrag.appendChild(child)
-                }
-                parent.parentNode.replaceChild(docFrag, parent)
-                editor.selection.restore()
-            }
+    keypress(instance, editor, event) {
+        if (editor) {
+            TributeEvents.removeMention(editor, event)
         }
     }
 
@@ -171,8 +175,13 @@ class TributeEvents {
             instance.inputEvent = false
         }
         instance.updateSelection(this)
-
         if (event.keyCode === 27) return
+
+        if (editor && editor.charCounter && editor.charCounter.count() === 0) {
+            instance.tribute.isActive = false
+            instance.tribute.hideMenu()
+            return
+        }
 
         if (!instance.tribute.allowSpaces && instance.tribute.hasTrailingSpace) {
             instance.tribute.hasTrailingSpace = false;
@@ -285,18 +294,18 @@ class TributeEvents {
                     if (this.tribute.spaceSelectsMatch) {
                         this.callbacks().enter(e, el)
                     } else if (!this.tribute.allowSpaces) {
-                        e.stopPropagation();
+                        e.stopPropagation()
                         setTimeout(() => {
-                            this.tribute.hideMenu();
-                            this.tribute.isActive = false;
+                            this.tribute.hideMenu()
+                            this.tribute.isActive = false
                         }, 0);
                     }
                 } else {
                     const anchor = editor.selection.get().anchorNode
                     if (TributeEvents.isInsideMention(anchor)) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        return false;
+                        e.preventDefault()
+                        e.stopPropagation()
+                        return false
                     }
                 }
             },
@@ -350,26 +359,26 @@ class TributeEvents {
         let lis = this.tribute.menu.querySelectorAll('li'),
             length = lis.length >>> 0
 
-        if (index) this.tribute.menuSelected = parseInt(index);
+        if (index) this.tribute.menuSelected = parseInt(index)
 
         for (let i = 0; i < length; i++) {
             let li = lis[i]
             if (i === this.tribute.menuSelected) {
-                li.classList.add(this.tribute.current.collection.selectClass);
+                li.classList.add(this.tribute.current.collection.selectClass)
 
-                let liClientRect = li.getBoundingClientRect();
-                let menuClientRect = this.tribute.menu.querySelector("ul").getBoundingClientRect();
+                let liClientRect = li.getBoundingClientRect()
+                let menuClientRect = this.tribute.menu.querySelector("ul").getBoundingClientRect()
 
                 if (liClientRect.bottom > menuClientRect.bottom) {
-                    let scrollDistance = liClientRect.bottom - menuClientRect.bottom;
+                    let scrollDistance = liClientRect.bottom - menuClientRect.bottom
                     this.tribute.menu.querySelector("ul").scrollTop += scrollDistance
                 } else if (liClientRect.top < menuClientRect.top) {
-                    let scrollDistance = menuClientRect.top - liClientRect.top;
+                    let scrollDistance = menuClientRect.top - liClientRect.top
                     this.tribute.menu.querySelector("ul").scrollTop -= scrollDistance
                 }
 
             } else {
-                li.classList.remove(this.tribute.current.collection.selectClass);
+                li.classList.remove(this.tribute.current.collection.selectClass)
             }
         }
     }
