@@ -369,6 +369,15 @@ class TributeEvents {
                             this.tribute.hideMenu()
                             this.tribute.isActive = false
                         }, 0);
+                    } else {
+                        const text = this.tribute.range.getTextPrecedingCurrentSelection();
+                        if (text.trim() === this.tribute.current.trigger) {
+                            e.stopPropagation()
+                            setTimeout(() => {
+                                this.tribute.hideMenu()
+                                this.tribute.isActive = false
+                            }, 0);
+                        }
                     }
                 }
             },
