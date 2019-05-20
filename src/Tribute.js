@@ -25,6 +25,7 @@ class Tribute {
         replaceTextSuffix = null,
         positionMenu = true,
         spaceSelectsMatch = false,
+        selectWithComma = false,
         searchOpts = {},
         editor = {},
         isValidSelection = null,
@@ -41,6 +42,7 @@ class Tribute {
         this.positionMenu = positionMenu
         this.hasTrailingSpace = false;
         this.spaceSelectsMatch = spaceSelectsMatch;
+        this.selectWithComma = selectWithComma;
         this.invalidEvent = document.createEvent('Event');
         this.invalidEvent.initEvent('invalid', true, true);
 
@@ -97,6 +99,8 @@ class Tribute {
                 searchOpts: searchOpts,
 
                 editor: editor,
+
+                selectWithComma: selectWithComma,
 
                 isValidSelection: (t => {
                     if (typeof t === 'function') {

@@ -69,6 +69,9 @@ export type TributeCollection<T extends {}> = {
 
   //function to check if the selection is valid (optional)
   isValidSelection?: Function
+
+  //use comma as enter
+  selectWithComma?: boolean
 }
 
 export type TributeOptions<T> = TributeCollection<T> | {

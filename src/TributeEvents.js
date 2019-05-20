@@ -26,6 +26,9 @@ class TributeEvents {
         }, {
             key: 40,
             value: 'DOWN'
+        }, {
+            key: 188,
+            value: 'COMMA'
         }]
     }
     
@@ -40,14 +43,25 @@ class TributeEvents {
     }
 
     static isInsideMention(anchor) {
+        if (anchor && anchor.classList && anchor.classList.contains("fr-tribute")) {
+            return true
+        }
         return anchor && anchor.parentNode && anchor.parentNode.classList.contains("fr-tribute")
     }
 
-    static removeMention(editor, event) {
+    static removeCurrentMention(editor, event) {
         const charCode = (typeof event.which === "undefined") ? event.keyCode : event.which;
         const anchor = editor.selection.get().anchorNode
+        TributeEvents.removeMention(anchor, editor, charCode)
+    }
+
+    static removeMention(anchor, editor, charCode) {
+        if (!editor) {
+            return
+        }
         if (TributeEvents.isInsideMention(anchor)) {
-            const parent = anchor.parentNode
+            const treatAnchorAsParent = anchor && anchor.classList && anchor.classList.contains("fr-tribute")
+            const parent = treatAnchorAsParent ? anchor : anchor.parentNode
             const docFrag = document.createDocumentFragment()
             const div = document.createElement('div')
             div.innerHTML = ''
@@ -80,9 +94,35 @@ class TributeEvents {
         }
     }
 
+    static removeRangeMention(editor, event) {
+        if (editor) {
+            if (!editor.selection.isCollapsed()) {
+                const { startContainer, endContainer } = editor.selection.ranges()[0]
+                const charCode = (typeof event.which === "undefined") ? event.keyCode : event.which
+                TributeEvents.removeMention(startContainer.parentNode, editor, charCode)
+                TributeEvents.removeMention(endContainer.parentNode, editor, charCode)
+            } else {
+                return false
+            }
+        }
+    }
+
+    static removePreviousMention(editor, event) {
+        const charCode = (typeof event.which === "undefined") ? event.keyCode : event.which;
+        const anchor = editor.selection.get().anchorNode
+        const elem = anchor.previousSibling || anchor.parentNode.previousSibling
+        TributeEvents.removeMention(elem, editor, charCode)
+    }
+
+    static removeNextMention(editor, event) {
+        const charCode = (typeof event.which === "undefined") ? event.keyCode : event.which;
+        const anchor = editor.selection.get().anchorNode
+        const elem = anchor.nextSibling || anchor.parentNode.nextSibling
+        TributeEvents.removeMention(elem, editor, charCode)
+    }
+
     bind(element, editor) {
         element.boundKeydown = this.keydown.bind(element, this, editor);
-        element.boundKeypress = this.keypress.bind(element, this, editor);
         element.boundKeyup = this.keyup.bind(element, this, editor);
         element.boundInput = this.input.bind(element, this, editor);
 
@@ -90,8 +130,6 @@ class TributeEvents {
             element.boundKeydown, false)
         element.addEventListener('keyup',
             element.boundKeyup, false)
-        element.addEventListener('keypress',
-            element.boundKeypress, false)
         element.addEventListener('input',
             element.boundInput, false)
     }
@@ -101,13 +139,10 @@ class TributeEvents {
             element.boundKeydown, false)
         element.removeEventListener('keyup',
             element.boundKeyup, false)
-        element.removeEventListener('keypress',
-            element.boundKeypress, false)
         element.removeEventListener('input',
             element.boundInput, false)
 
         delete element.boundKeydown
-        delete element.boundKeypress
         delete element.boundKeyup
         delete element.boundInput
     }
@@ -132,12 +167,40 @@ class TributeEvents {
                 instance.callbacks()[o.value.toLowerCase()](event, element, editor)
             }
         })
-    }
 
-    keypress(instance, editor, event) {
-        if (editor) {
-            TributeEvents.removeMention(editor, event)
+        if (!editor || ![8, 46].includes(event.keyCode)) {
+            return
         }
+
+        /*
+        const anchor = editor.selection.get().anchorNode
+        if (TributeEvents.isInsideMention(anchor)) {
+            TributeEvents.removeCurrentMention(editor, event)
+            return
+        }*/
+
+        if (event.ctrlKey || event.metaKey) {
+            event.preventDefault()
+            event.stopPropagation()
+            editor.cursor[event.keyCode === 8 ? 'backspace' : 'del']()
+            instance.callbacks().delete(event, element, editor)
+            return false
+        }
+        /*
+        // TODO handle ctrl supr / del
+        const precText = instance.tribute.range.getTextPrecedingCurrentSelection();
+
+        const startsWithTrigger = /(?:^|\s)(@[a-z0-9]\w*)/gi
+        console.log(precText)
+        debugger
+        if (precText.trim() !== "" && !startsWithTrigger.test(precText)) {
+            return;
+        }
+        if ((event.ctrlKey || event.metaKey) && event.keyCode === 8) {
+            TributeEvents.removePreviousMention(editor, event)
+        } else if ((event.ctrlKey || event.metaKey) && event.keyCode === 46) {
+            TributeEvents.removeNextMention(editor, event)
+        }*/
     }
 
     input(instance, event, editor) {
@@ -207,10 +270,10 @@ class TributeEvents {
                 }
             }
         }
-
+        
         if ((instance.tribute.current.trigger || instance.tribute.autocompleteMode)
             && instance.commandEvent === false
-            || instance.tribute.isActive && event.keyCode === 8) {
+            || instance.tribute.isActive && [8, 46].includes(event.keyCode)) {
           instance.tribute.showMenuFor(this, true)
         }
     }
@@ -277,6 +340,13 @@ class TributeEvents {
                     }, 0)
                 }
             },
+            comma: (e, el) => {
+                if (this.tribute.isActive) {
+                    if (this.tribute.selectWithComma) {
+                        this.callbacks().enter(e, el)
+                    }
+                }
+            },
             escape: (e, el) => {
                 if (this.tribute.isActive) {
                     e.preventDefault()
@@ -299,13 +369,15 @@ class TributeEvents {
                             this.tribute.hideMenu()
                             this.tribute.isActive = false
                         }, 0);
-                    }
-                } else {
-                    const anchor = editor.selection.get().anchorNode
-                    if (TributeEvents.isInsideMention(anchor)) {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        return false
+                    } else {
+                        const text = this.tribute.range.getTextPrecedingCurrentSelection();
+                        if (text.trim() === this.tribute.current.trigger) {
+                            e.stopPropagation()
+                            setTimeout(() => {
+                                this.tribute.hideMenu()
+                                this.tribute.isActive = false
+                            }, 0);
+                        }
                     }
                 }
             },

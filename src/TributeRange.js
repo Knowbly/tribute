@@ -142,6 +142,10 @@ class TributeRange {
                 let textSuffix = typeof this.tribute.replaceTextSuffix == 'string'
                     ? this.tribute.replaceTextSuffix
                     : '\xA0'
+                
+                if (originalEvent.keyCode === 188) {
+                    textSuffix = "," + textSuffix
+                }
                 text += textSuffix
                 this.pasteHtml(text, info.mentionPosition,
                     info.mentionPosition + info.mentionText.length + !this.tribute.autocompleteMode)
@@ -374,6 +378,9 @@ class TributeRange {
     }
 
     isContentEditable(element) {
+        if (!element) {
+            return false
+        }
         return element.nodeName !== 'INPUT' && element.nodeName !== 'TEXTAREA'
     }
 
