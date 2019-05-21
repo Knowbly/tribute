@@ -153,6 +153,9 @@ class TributeEvents {
     }
 
     keydown(instance, editor, event) {
+        if (instance.tribute.isActive && [16, 17, 18, 20].includes(event.keyCode)) {
+            return
+        }
         if (instance.shouldDeactivate(event)) {
             instance.tribute.isActive = false
             instance.tribute.hideMenu()
@@ -234,6 +237,10 @@ class TributeEvents {
     }
 
     keyup(instance, editor, event) {
+        if (instance.tribute.isActive && [16, 17, 18, 20].includes(event.keyCode)) {
+            return
+        }
+
         if (instance.inputEvent) {
             instance.inputEvent = false
         }
@@ -422,6 +429,9 @@ class TributeEvents {
                     this.tribute.hideMenu()
                 } else if (this.tribute.isActive) {
                     this.tribute.showMenuFor(el)
+                } else if (!this.tribute.isActive && this.tribute.range.getTextPrecedingCurrentSelection() === (this.tribute.current.trigger || '@')) {
+                    this.tribute.inputEvent = true
+                    this.callbacks().triggerChar(e, el, (this.tribute.current.trigger || "@"))
                 }
             }
         }
