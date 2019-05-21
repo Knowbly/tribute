@@ -281,7 +281,17 @@ class TributeEvents {
         if ((instance.tribute.current.trigger || instance.tribute.autocompleteMode)
             && instance.commandEvent === false
             || instance.tribute.isActive && [8, 46].includes(event.keyCode)) {
-          instance.tribute.showMenuFor(this, true)
+            if (event.keyCode === 81) {
+                const text = instance.tribute.range.getTextPrecedingCurrentSelection()
+                if (text.length > 1) {
+                    instance.tribute.hideMenu();
+                    return
+                } else {
+                    instance.tribute.showMenuFor(this, true)
+                }
+            } else {
+                instance.tribute.showMenuFor(this, true)
+            }
         }
     }
 
@@ -325,11 +335,14 @@ class TributeEvents {
 
     callbacks() {
         return {
-            triggerChar: (e, el, trigger) => {
+            triggerChar: (e, el, trigger, showMenu = false) => {
                 const text = this.tribute.range.getTextPrecedingCurrentSelection()
                 const words = text.split(" ")
                 if (words[words.length - 1].split('@').length - 1 > 1) {
                     return;
+                }
+                if (words[words.length - 1].trim()[0] !== '@') {
+                    return
                 }
                 let tribute = this.tribute
                 tribute.current.trigger = trigger
@@ -339,7 +352,7 @@ class TributeEvents {
                 })
 
                 tribute.current.collection = collectionItem
-                if (tribute.inputEvent) tribute.showMenuFor(el, true)
+                if (tribute.inputEvent || showMenu) tribute.showMenuFor(el, true)
             },
             enter: (e, el) => {
                 // choose selection
@@ -433,9 +446,17 @@ class TributeEvents {
                     this.tribute.hideMenu()
                 } else if (this.tribute.isActive) {
                     this.tribute.showMenuFor(el)
-                } else if (!this.tribute.isActive && this.tribute.range.getTextPrecedingCurrentSelection() === (this.tribute.current.trigger || '@')) {
+                } else if (!this.tribute.isActive) {
+                    const text = this.tribute.range.getTextPrecedingCurrentSelection()
+                    const words = text.split(" ")
+                    if (words[words.length - 1].split('@').length - 1 > 1) {
+                        return;
+                    }
+                    if (words[words.length - 1].trim()[0] !== '@') {
+                        return
+                    }
                     this.tribute.inputEvent = true
-                    this.callbacks().triggerChar(e, el, (this.tribute.current.trigger || "@"))
+                    this.callbacks().triggerChar(e, el, (this.tribute.current.trigger || "@"), true)
                 }
             }
         }
