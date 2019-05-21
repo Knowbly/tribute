@@ -153,6 +153,9 @@ class TributeEvents {
     }
 
     keydown(instance, editor, event) {
+        if (instance.tribute.isActive && [16, 17, 18, 20].includes(event.keyCode)) {
+            return
+        }
         if (instance.shouldDeactivate(event)) {
             instance.tribute.isActive = false
             instance.tribute.hideMenu()
@@ -234,6 +237,10 @@ class TributeEvents {
     }
 
     keyup(instance, editor, event) {
+        if (instance.tribute.isActive && [16, 17, 18, 20].includes(event.keyCode)) {
+            return
+        }
+
         if (instance.inputEvent) {
             instance.inputEvent = false
         }
@@ -319,6 +326,11 @@ class TributeEvents {
     callbacks() {
         return {
             triggerChar: (e, el, trigger) => {
+                const text = this.tribute.range.getTextPrecedingCurrentSelection()
+                const words = text.split(" ")
+                if (words[words.length - 1].split('@').length - 1 > 1) {
+                    return;
+                }
                 let tribute = this.tribute
                 tribute.current.trigger = trigger
 
@@ -369,16 +381,15 @@ class TributeEvents {
                             this.tribute.hideMenu()
                             this.tribute.isActive = false
                         }, 0);
-                    } else {
-                        const text = this.tribute.range.getTextPrecedingCurrentSelection();
-                        if (text.trim() === this.tribute.current.trigger) {
-                            e.stopPropagation()
-                            setTimeout(() => {
-                                this.tribute.hideMenu()
-                                this.tribute.isActive = false
-                            }, 0);
-                        }
                     }
+                }
+                const text = this.tribute.range.getTextPrecedingCurrentSelection().trim();
+                if (text.lastIndexOf(this.tribute.current.trigger) === text.length - 1) {
+                    e.stopPropagation()
+                    setTimeout(() => {
+                        this.tribute.hideMenu()
+                        this.tribute.isActive = false
+                    }, 0);
                 }
             },
             up: (e, el) => {
@@ -422,6 +433,9 @@ class TributeEvents {
                     this.tribute.hideMenu()
                 } else if (this.tribute.isActive) {
                     this.tribute.showMenuFor(el)
+                } else if (!this.tribute.isActive && this.tribute.range.getTextPrecedingCurrentSelection() === (this.tribute.current.trigger || '@')) {
+                    this.tribute.inputEvent = true
+                    this.callbacks().triggerChar(e, el, (this.tribute.current.trigger || "@"))
                 }
             }
         }
