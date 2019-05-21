@@ -326,6 +326,11 @@ class TributeEvents {
     callbacks() {
         return {
             triggerChar: (e, el, trigger) => {
+                const text = this.tribute.range.getTextPrecedingCurrentSelection()
+                const words = text.split(" ")
+                if (words[words.length - 1].split('@').length - 1 > 1) {
+                    return;
+                }
                 let tribute = this.tribute
                 tribute.current.trigger = trigger
 
@@ -376,16 +381,15 @@ class TributeEvents {
                             this.tribute.hideMenu()
                             this.tribute.isActive = false
                         }, 0);
-                    } else {
-                        const text = this.tribute.range.getTextPrecedingCurrentSelection();
-                        if (text.trim() === this.tribute.current.trigger) {
-                            e.stopPropagation()
-                            setTimeout(() => {
-                                this.tribute.hideMenu()
-                                this.tribute.isActive = false
-                            }, 0);
-                        }
                     }
+                }
+                const text = this.tribute.range.getTextPrecedingCurrentSelection().trim();
+                if (text.lastIndexOf(this.tribute.current.trigger) === text.length - 1) {
+                    e.stopPropagation()
+                    setTimeout(() => {
+                        this.tribute.hideMenu()
+                        this.tribute.isActive = false
+                    }, 0);
                 }
             },
             up: (e, el) => {
