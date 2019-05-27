@@ -1,5 +1,5 @@
 # Tribute
-[![CDNJS version](https://img.shields.io/cdnjs/v/tributejs.svg)](https://cdnjs.com/libraries/tributejs)
+[![CDNJS version](https://img.shields.io/cdnjs/v/tributejs.svg)](https://cdnjs.com/libraries/tributejs) [![Build Status](https://travis-ci.org/zurb/tribute.svg?branch=master)](https://travis-ci.org/zurb/tribute)
 
 A cross-browser `@mention` engine written in ES6, no dependencies. Tested in Firefox, Chrome, iOS Safari, Safari, IE 9+, Edge 12+, Android 4+, and Windows Phone.
 
@@ -12,6 +12,7 @@ A cross-browser `@mention` engine written in ES6, no dependencies. Tested in Fir
 - [Framework Support](#framework-support)
 - [WYSIWYG Editor Support](#wysiwyg-editor-support)
 - [Contribution Ideas](#contribution-ideas)
+- [Example](https://zurb.github.io/tribute/example/)
 
 ## Installing
 There are a few ways to install Tribute; [Bower](http://bower.io/), as an [NPM Module](https://npmjs.com/package/tributejs), or by [downloading](https://github.com/zurb/tribute/archive/master.zip) from the `dist` folder in this repo.
@@ -406,6 +407,15 @@ gulp
 That's it! Now you can use the `example/index.html` to test out changes to the code base. All changes to `src` and `scss` will recompile on the fly.
 
 Once you have made your changes, feel free to submit a pull request.
+
+## Testing
+ We use [Karma](https://karma-runner.github.io/latest/index.html) and [Jasmin](https://jasmine.github.io) as the testing framework.
+
+ To run the tests type:
+  ```
+  yarn run build
+  yarn test
+  ```
 
 ## Framework Support
 

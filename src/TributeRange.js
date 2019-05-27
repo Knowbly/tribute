@@ -45,7 +45,7 @@ class TributeRange {
                                      right: ${coordinates.right}px;
                                      bottom: ${coordinates.bottom}px;
                                      position: absolute;
-                                     zIndex: 10000;
+                                     z-index: 10000;
                                      display: block;`
 
             if (coordinates.left === 'auto') {
@@ -113,18 +113,19 @@ class TributeRange {
     }
 
     replaceTriggerText(text, requireLeadingSpace, hasTrailingSpace, originalEvent, item) {
-        let context = this.tribute.current
         let info = this.getTriggerInfo(true, hasTrailingSpace, requireLeadingSpace, this.tribute.allowSpaces, this.tribute.autocompleteMode)
 
-        // Create the event
-        let replaceEvent = new CustomEvent('tribute-replaced', {
-            detail: {
-                item: item,
-                event: originalEvent
-            }
-        })
-
         if (info !== undefined) {
+            let context = this.tribute.current
+            let replaceEvent = new CustomEvent('tribute-replaced', {
+                detail: {
+                    item: item,
+                    instance: context,
+                    context: info,
+                    event: originalEvent,
+                }
+            })
+
             if (!this.isContentEditable(context.element)) {
                 let myField = this.tribute.current.element
                 let textSuffix = typeof this.tribute.replaceTextSuffix == 'string'

@@ -29,6 +29,7 @@ class Tribute {
         searchOpts = {},
         editor = {},
         isValidSelection = null,
+        menuItemLimit = null,
     }) {
         this.autocompleteMode = autocompleteMode
         this.menuSelected = 0
@@ -108,7 +109,9 @@ class Tribute {
                     }
 
                     return isValidSelection || function () {return ''}.bind(this)
-                })(isValidSelection)
+                })(isValidSelection),
+                
+                menuItemLimit: menuItemLimit,
             }]
         }
         else if (collection) {
@@ -148,7 +151,8 @@ class Tribute {
                         }
 
                         return null
-                    })(isValidSelection)
+                    })(isValidSelection),
+                    menuItemLimit: item.menuItemLimit || menuItemLimit,
                 }
             })
         }
@@ -321,7 +325,12 @@ class Tribute {
                 return
             }
 
+            if (this.current.collection.menuItemLimit) {
+                items = items.slice(0, this.current.collection.menuItemLimit)
+            }
+
             ul.innerHTML = ''
+            let fragment = this.range.getDocument().createDocumentFragment()
 
             items.forEach((item, index) => {
                 let li = this.range.getDocument().createElement('li')
@@ -337,8 +346,9 @@ class Tribute {
                   li.className = this.current.collection.selectClass
                 }
                 li.innerHTML = this.current.collection.menuItemTemplate(item)
-                ul.appendChild(li)
+                fragment.appendChild(li)
             })
+            ul.appendChild(fragment)
         }
 
         if (typeof this.current.collection.values === 'function') {
