@@ -273,11 +273,11 @@ class TributeEvents {
                 })
     
                 if (typeof trigger !== 'undefined') {
-                    instance.callbacks().triggerChar(event, this, trigger)
+                    instance.callbacks().triggerChar(event, this, trigger, true)
                 }
             }
         }
-        
+
         if ((instance.tribute.current.trigger || instance.tribute.autocompleteMode)
             && instance.commandEvent === false
             || instance.tribute.isActive && [8, 46].includes(event.keyCode)) {
@@ -337,11 +337,12 @@ class TributeEvents {
         return {
             triggerChar: (e, el, trigger, showMenu = false) => {
                 const text = this.tribute.range.getTextPrecedingCurrentSelection()
-                const words = text.split(" ")
-                if (words[words.length - 1].split('@').length - 1 > 1) {
+                const words = text.split(/\s/)
+                const lastWord = words[words.length - 1]
+                if (lastWord.split('@').length - 1 > 1) {
                     return;
                 }
-                if (words[words.length - 1].trim()[0] !== '@') {
+                if (lastWord.trim()[0] !== '@') {
                     return
                 }
                 let tribute = this.tribute
