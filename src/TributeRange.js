@@ -252,15 +252,19 @@ class TributeRange {
             let selectedElem = this.getWindowSelection().anchorNode
 
             if (selectedElem != null) {
-                let workingNodeContent = selectedElem.textContent
-                let selectStartOffset = this.getWindowSelection().getRangeAt(0).startOffset
+                if (selectedElem.childNodes && selectedElem.childNodes[this.getWindowSelection().anchorOffset]) {
+                    const child = selectedElem.childNodes[this.getWindowSelection().anchorOffset]
+                    text = child.nodeType === Node.TEXT_NODE ? child.textContent : ""
+                } else {
+                    let workingNodeContent = selectedElem.textContent
+                    let selectStartOffset = this.getWindowSelection().getRangeAt(0).startOffset
 
-                if (workingNodeContent && selectStartOffset >= 0) {
-                    text = workingNodeContent.substring(0, selectStartOffset)
+                    if (workingNodeContent && selectStartOffset >= 0) {
+                        text = workingNodeContent.substring(0, selectStartOffset)
+                    }
                 }
             }
         }
-
         return text
     }
 
