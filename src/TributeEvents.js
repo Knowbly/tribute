@@ -42,85 +42,6 @@ class TributeEvents {
         }
     }
 
-    static isInsideMention(anchor) {
-        if (anchor && anchor.classList && anchor.classList.contains("fr-tribute")) {
-            return true
-        }
-        return anchor && anchor.parentNode && anchor.parentNode.classList.contains("fr-tribute")
-    }
-
-    static removeCurrentMention(editor, event) {
-        const charCode = (typeof event.which === "undefined") ? event.keyCode : event.which;
-        const anchor = editor.selection.get().anchorNode
-        TributeEvents.removeMention(anchor, editor, charCode)
-    }
-
-    static removeMention(anchor, editor, charCode) {
-        if (!editor) {
-            return
-        }
-        if (TributeEvents.isInsideMention(anchor)) {
-            const treatAnchorAsParent = anchor && anchor.classList && anchor.classList.contains("fr-tribute")
-            const parent = treatAnchorAsParent ? anchor : anchor.parentNode
-            const docFrag = document.createDocumentFragment()
-            const div = document.createElement('div')
-            div.innerHTML = ''
-            if (charCode !== 13) {
-                div.innerHTML = '@'
-            }
-            div.firstChild && docFrag.appendChild(div.firstChild)
-            editor.selection.save()
-            if (charCode === 13) {
-                // breaks word
-                if (parent.previousSibling && parent.previousSibling.previousSibling) {
-                    const parent2 = parent.previousSibling.previousSibling
-                    if (parent2.classList.contains("fr-tribute")) {
-                        while (parent2.firstChild) {
-                            const child = parent2.removeChild(parent2.firstChild)
-                            docFrag.appendChild(child)
-                        }
-                        docFrag.appendChild(document.createElement('br'))
-                        TributeEvents.remove(parent.previousSibling.previousSibling)
-                        TributeEvents.remove(parent.previousSibling)
-                    }
-                }
-            }
-            while (parent.firstChild) {
-                const child = parent.removeChild(parent.firstChild)
-                docFrag.appendChild(child)
-            }
-            parent.parentNode.replaceChild(docFrag, parent)
-            editor.selection.restore()
-        }
-    }
-
-    static removeRangeMention(editor, event) {
-        if (editor) {
-            if (!editor.selection.isCollapsed()) {
-                const { startContainer, endContainer } = editor.selection.ranges()[0]
-                const charCode = (typeof event.which === "undefined") ? event.keyCode : event.which
-                TributeEvents.removeMention(startContainer.parentNode, editor, charCode)
-                TributeEvents.removeMention(endContainer.parentNode, editor, charCode)
-            } else {
-                return false
-            }
-        }
-    }
-
-    static removePreviousMention(editor, event) {
-        const charCode = (typeof event.which === "undefined") ? event.keyCode : event.which;
-        const anchor = editor.selection.get().anchorNode
-        const elem = anchor.previousSibling || anchor.parentNode.previousSibling
-        TributeEvents.removeMention(elem, editor, charCode)
-    }
-
-    static removeNextMention(editor, event) {
-        const charCode = (typeof event.which === "undefined") ? event.keyCode : event.which;
-        const anchor = editor.selection.get().anchorNode
-        const elem = anchor.nextSibling || anchor.parentNode.nextSibling
-        TributeEvents.removeMention(elem, editor, charCode)
-    }
-
     bind(element, editor) {
         element.boundKeydown = this.keydown.bind(element, this, editor);
         element.boundKeyup = this.keyup.bind(element, this, editor);
@@ -175,13 +96,6 @@ class TributeEvents {
             return
         }
 
-        /*
-        const anchor = editor.selection.get().anchorNode
-        if (TributeEvents.isInsideMention(anchor)) {
-            TributeEvents.removeCurrentMention(editor, event)
-            return
-        }*/
-
         if (event.ctrlKey || event.metaKey) {
             event.preventDefault()
             event.stopPropagation()
@@ -189,21 +103,6 @@ class TributeEvents {
             instance.callbacks().delete(event, element, editor)
             return false
         }
-        /*
-        // TODO handle ctrl supr / del
-        const precText = instance.tribute.range.getTextPrecedingCurrentSelection();
-
-        const startsWithTrigger = /(?:^|\s)(@[a-z0-9]\w*)/gi
-        console.log(precText)
-        debugger
-        if (precText.trim() !== "" && !startsWithTrigger.test(precText)) {
-            return;
-        }
-        if ((event.ctrlKey || event.metaKey) && event.keyCode === 8) {
-            TributeEvents.removePreviousMention(editor, event)
-        } else if ((event.ctrlKey || event.metaKey) && event.keyCode === 46) {
-            TributeEvents.removeNextMention(editor, event)
-        }*/
     }
 
     input(instance, event, editor) {

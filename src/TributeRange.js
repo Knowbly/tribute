@@ -157,11 +157,22 @@ class TributeRange {
     }
 
     pasteHtml(html, startPos, endPos) {
-        let range, sel
+        let range, sel, selEl
         sel = this.getWindowSelection()
+        const { anchorOffset, anchorNode } = sel;
+        if (anchorNode.childNodes && anchorNode.childNodes[anchorOffset]) {
+            const child = anchorNode.childNodes[anchorOffset]
+            if (child.nodeType === Node.TEXT_NODE) {
+                selEl = child
+            } else if (anchorOffset > 0 && child.nodeType === Node.ELEMENT_NODE) {
+                selEl = anchorNode.childNodes[anchorOffset - 1]
+            }
+        } else {
+            selEl = sel.anchorNode
+        }
         range = this.getDocument().createRange()
-        range.setStart(sel.anchorNode, startPos)
-        range.setEnd(sel.anchorNode, endPos)
+        range.setStart(selEl, startPos)
+        range.setEnd(selEl, endPos)
         range.deleteContents()
 
         let el = this.getDocument().createElement('div')
@@ -252,9 +263,14 @@ class TributeRange {
             let selectedElem = this.getWindowSelection().anchorNode
 
             if (selectedElem != null) {
-                if (selectedElem.childNodes && selectedElem.childNodes[this.getWindowSelection().anchorOffset]) {
-                    const child = selectedElem.childNodes[this.getWindowSelection().anchorOffset]
-                    text = child.nodeType === Node.TEXT_NODE ? child.textContent : ""
+                const anchorOffset = this.getWindowSelection().anchorOffset;
+                if (selectedElem.childNodes && selectedElem.childNodes[anchorOffset]) {
+                    const child = selectedElem.childNodes[anchorOffset]
+                    if (child.nodeType === Node.TEXT_NODE) {
+                        text = child.textContent
+                    } else if (anchorOffset > 0 && child.nodeType === Node.ELEMENT_NODE) {
+                        text += selectedElem.childNodes[anchorOffset - 1].textContent
+                    }
                 } else {
                     let workingNodeContent = selectedElem.textContent
                     let selectStartOffset = this.getWindowSelection().getRangeAt(0).startOffset
@@ -367,7 +383,7 @@ class TributeRange {
     lastIndexWithLeadingSpace (str, char) {
         let reversedStr = str.split('').reverse().join('')
         let index = -1
-
+        
         for (let cidx = 0, len = str.length; cidx < len; cidx++) {
             let firstChar = cidx === str.length - 1
             let leadingSpace = /\s/.test(reversedStr[cidx + 1])
