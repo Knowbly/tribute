@@ -91,18 +91,6 @@ class TributeEvents {
                 instance.callbacks()[o.value.toLowerCase()](event, element, editor)
             }
         })
-
-        if (!editor || ![8, 46].includes(event.keyCode)) {
-            return
-        }
-
-        if (event.ctrlKey || event.metaKey) {
-            event.preventDefault()
-            event.stopPropagation()
-            editor.cursor[event.keyCode === 8 ? 'backspace' : 'del']()
-            instance.callbacks().delete(event, element, editor)
-            return false
-        }
     }
 
     input(instance, event, editor) {
